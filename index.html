@@ -157,14 +157,16 @@
             const response = await fetch(url);
             const csvData = await response.text();
             const rows = csvData.split(/\r?\n/).slice(1); 
-        
+
             container.innerHTML = ''; 
             rows.forEach(row => {
-                const cols = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-                
+                // This Regex handles columns even if they have spaces or are wrapped in quotes
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                        
                 if (cols && cols[0]) {
-                    const imgUrl = cols[0].replace(/"/g, "").trim();
-                    const description = cols[1] ? cols[1].replace(/"/g, "").trim() : 'Mani Tailors Design';
+                    // Clean up quotes that Google Sheets adds to the text
+                    const imgUrl = cols[0].replace(/^"|"$/g, '').trim();
+                    const description = cols[1] ? cols[1].replace(/^"|"$/g, '').trim() : 'Mani Tailors Design';
                     
                     const div = document.createElement('div');
                     div.className = 'gallery-item';
@@ -179,7 +181,7 @@
             container.innerHTML = '<p>Error loading images. Please check links.</p>';
         }
     }
-    
+
     // Lightbox Logic
     function openLightbox(url) {
         const lb = document.getElementById('lightbox');
@@ -188,7 +190,7 @@
         lb.style.display = 'flex';
         document.body.style.overflow = 'hidden'; // Stop scrolling while viewing
     }
-    
+
     function closeLightbox() {
         document.getElementById('lightbox').style.display = 'none';
         document.body.style.overflow = 'auto'; // Re-enable scrolling
